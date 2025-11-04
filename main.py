@@ -11,27 +11,29 @@ def home():
 
 @app.route('/estimate', methods=['POST'])
 def estimate():
-    try:
-        data = request.get_json()
-        area = float(data.get('area', 0))
-        type_ = data.get('type', 'basic').lower()
+    data = request.get_json()
+    area = float(data.get('area', 0))
+    building_type = data.get('type', 'basic')
 
-        rate = 1500 if type_ == "basic" else 2000 if type_ == "standard" else 2500
-        total = area * rate
+    rate = 1500 if building_type == "basic" else 2000 if building_type == "standard" else 2500
+    estimated_cost = area * rate
 
-        return jsonify({
-            "estimated_cost": total,
-            "currency": "INR",
-            "breakdown": {
-                "materials": total * 0.5,
-                "labor": total * 0.3,
-                "finishing": total * 0.15,
-                "misc": total * 0.05
-            }
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
+    # Add chart data
+    chart_data = {
+        "labels": ["Material", "Labor", "Finishing", "Misc"],
+        "values": [
+            estimated_cost * 0.5,
+            estimated_cost * 0.3,
+            estimated_cost * 0.15,
+            estimated_cost * 0.05
+        ]
+    }
 
+    return jsonify({
+        "estimated_cost": estimated_cost,
+        "currency": "INR",
+        "chart_data": chart_data   # ✅ Added this line
+    })
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
